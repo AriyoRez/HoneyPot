@@ -1,0 +1,57 @@
+# =============================================================================
+# OpenCanary configuration TEMPLATE  (opencanary.conf.template)
+# =============================================================================
+# This is a TEMPLATE, not a working config. It contains PLACEHOLDER ports and
+# FAKE banner values only — no real secrets, tokens, or credentials.
+#
+# HOW TO USE (on the Linux sensor VM, NOT committed):
+#   1. Copy this file to `opencanary.conf` on the VM.
+#   2. Replace every REPLACE_ME_* placeholder with real values for that host.
+#   3. Adjust ports/banners to match the deception profile you want to present.
+#   4. NEVER commit the filled-in `opencanary.conf` — it is gitignored.
+#
+# The body below is valid JSON (OpenCanary reads strict JSON). Explanatory notes
+# live in "_comment_*" keys, which OpenCanary ignores. Strip the leading "#"
+# comment block above before use if your tooling requires pure JSON.
+#
+# MVP decoy modules enabled here: ssh, http, mysql.
+# =============================================================================
+{
+    "_comment_device": "Identify this decoy node in logs / the frontend. Use a non-identifying label.",
+    "device.node_id": "REPLACE_ME_NODE_ID",
+
+    "ip.ignorelist": [],
+    "logtype.ignorelist": [],
+
+    "_comment_ssh": "Fake SSH decoy. Placeholder port + fake version banner.",
+    "ssh.enabled": true,
+    "ssh.port": 2222,
+    "ssh.version": "SSH-2.0-OpenSSH_X.Y_PLACEHOLDER",
+
+    "_comment_http": "Fake HTTP decoy. Placeholder port + fake server banner/skin.",
+    "http.enabled": true,
+    "http.port": 8080,
+    "http.banner": "Server: PLACEHOLDER-Web/0.0",
+    "http.skin": "basicLogin",
+
+    "_comment_mysql": "Fake MySQL decoy. Placeholder port + fake version banner.",
+    "mysql.enabled": true,
+    "mysql.port": 3306,
+    "mysql.banner": "5.X.Y-PLACEHOLDER",
+
+    "_comment_logger": "Local file logging on the VM. The custom frontend (app/reader) reads these events directly for display.",
+    "logger": {
+        "class": "PyLogger",
+        "kwargs": {
+            "formatters": {
+                "plain": { "format": "%(message)s" }
+            },
+            "handlers": {
+                "file": {
+                    "class": "logging.FileHandler",
+                    "filename": "REPLACE_ME_LOG_PATH/opencanary.log"
+                }
+            }
+        }
+    }
+}

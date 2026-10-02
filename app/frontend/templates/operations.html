@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Operations — Deception Detection Lab{% endblock %}
+{% block content %}
+<h1>Operations</h1>
+<p class="muted">Pipeline health and active detections from <code>{{ log_path }}</code>.</p>
+
+<section class="tiles" id="tiles">
+  <div class="tile">
+    <div class="tile-label">Total events</div>
+    <div class="tile-value">{{ health.total_events }}</div>
+  </div>
+  <div class="tile {{ 'tile-alert' if health.alert_count else '' }}">
+    <div class="tile-label">Alerts</div>
+    <div class="tile-value">{{ health.alert_count }}</div>
+  </div>
+  <div class="tile">
+    <div class="tile-label">Distinct sources</div>
+    <div class="tile-value">{{ health.distinct_sources }}</div>
+  </div>
+  <div class="tile">
+    <div class="tile-label">Unmapped rate</div>
+    <div class="tile-value">{{ (health.unmapped_rate * 100) | round(1) }}%</div>
+  </div>
+  <div class="tile tile-wide">
+    <div class="tile-label">Last event</div>
+    <div class="tile-value small">{{ health.last_event or '—' }}</div>
+  </div>
+</section>
+
+<section class="split">
+  <div>
+    <h2>Events by service</h2>
+    <table class="kv">
+      {% for svc, n in health.events_by_service.items() %}
+      <tr><td>{{ svc }}</td><td>{{ n }}</td></tr>
+      {% else %}<tr><td class="muted" colspan="2">none</td></tr>{% endfor %}
+    </table>
+  </div>
+  <div>
+    <h2>Events by category</h2>
+    <table class="kv">
+      {% for cat, n in health.events_by_category.items() %}
+      <tr><td>{{ cat }}</td><td>{{ n }}</td></tr>
+      {% else %}<tr><td class="muted" colspan="2">none</td></tr>{% endfor %}
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>Findings <span class="muted">({{ findings | length }})</span></h2>
+  <table class="grid" id="findings">
+    <thead>
+      <tr><th>Severity</th><th>Use case</th><th>Source</th><th>Service</th><th>Count</th><th>Summary</th></tr>
+    </thead>
+    <tbody>
+      {% for f in findings %}
+      <tr>
+        <td><span class="sev sev-{{ f.severity }}">{{ f.severity }}</span></td>
+        <td>{{ f.use_case }}</td>
+        <td>{{ f.src_ip or '—' }}</td>
+        <td>{{ f.service or '—' }}</td>
+        <td>{{ f.count }}</td>
+        <td>{{ f.summary }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="muted">No findings — no decoy interactions detected.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

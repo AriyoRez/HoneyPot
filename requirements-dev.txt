@@ -1,0 +1,8 @@
+# Development dependencies.
+# Versions are pinned in requirements.lock.txt after install via `pip freeze`.
+pytest
+ruff
+pre-commit
+# Live-VM acceptance probes (generate real decoy hits against an approved lab VM)
+paramiko
+pymysql

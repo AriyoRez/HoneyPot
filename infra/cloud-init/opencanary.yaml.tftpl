@@ -1,0 +1,85 @@
+#cloud-config
+# =============================================================================
+# cloud-init user-data TEMPLATE for an OpenCanary decoy VM.
+#
+# Rendered by Terraform (templatefile) per VM with:
+#   node_index     - integer index of this VM (0-based)
+#   enabled_decoys - list subset of ["ssh","http","mysql"]
+#
+# Portable: also usable directly with `multipass launch --cloud-init <rendered>`.
+# Produces a decoy VM with ONLY the chosen modules enabled. No real secrets.
+# =============================================================================
+package_update: true
+packages:
+  - python3-pip
+  - python3-venv
+  - python3-dev
+  - libssl-dev
+  - libpcap-dev
+
+write_files:
+  # Non-identifying node label — never a real hostname.
+  # Path is one of OpenCanary's config search locations (it has no --config flag).
+  - path: /etc/opencanaryd/opencanary.conf
+    permissions: "0640"
+    content: |
+      {
+          "device.node_id": "decoy-${node_index}",
+          "ip.ignorelist": [],
+          "logtype.ignorelist": [],
+
+          "ssh.enabled": ${contains(enabled_decoys, "ssh")},
+          "ssh.port": 2222,
+          "ssh.version": "SSH-2.0-OpenSSH_X.Y_PLACEHOLDER",
+
+          "http.enabled": ${contains(enabled_decoys, "http")},
+          "http.port": 8080,
+          "http.banner": "Server: PLACEHOLDER-Web/0.0",
+          "http.skin": "basicLogin",
+
+          "mysql.enabled": ${contains(enabled_decoys, "mysql")},
+          "mysql.port": 3306,
+          "mysql.banner": "5.X.Y-PLACEHOLDER",
+
+          "logger": {
+              "class": "PyLogger",
+              "kwargs": {
+                  "formatters": { "plain": { "format": "%(message)s" } },
+                  "handlers": {
+                      "file": {
+                          "class": "logging.FileHandler",
+                          "filename": "/var/log/opencanary/opencanary.log"
+                      }
+                  }
+              }
+          }
+      }
+
+  - path: /etc/systemd/system/opencanary.service
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=OpenCanary decoy (lab)
+      After=network-online.target
+      Wants=network-online.target
+
+      [Service]
+      Type=simple
+      ExecStart=/opt/opencanary/venv/bin/opencanaryd --dev
+      Restart=on-failure
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  - mkdir -p /var/log/opencanary
+  - python3 -m venv /opt/opencanary/venv
+  - /opt/opencanary/venv/bin/pip install --upgrade pip
+  - /opt/opencanary/venv/bin/pip install opencanary scapy
+  # Work around an OpenCanary packaging bug: the basicLogin skin ships without
+  # redirect.html, which makes GET / return 500 and suppresses HTTP logging.
+  - bash -c 'SK=$(find /opt/opencanary/venv -type d -name basicLogin 2>/dev/null | head -1); [ -n "$SK" ] && [ ! -f "$SK/redirect.html" ] && echo "<html><body>Redirecting...</body></html>" > "$SK/redirect.html"; true'
+  - systemctl daemon-reload
+  - systemctl enable --now opencanary.service
+
+final_message: "OpenCanary decoy-${node_index} provisioned (decoys: ${join(",", enabled_decoys)})"

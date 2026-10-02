@@ -1,0 +1,30 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Environment / secrets
+.env
+*.pem
+*.key
+
+# OS
+.DS_Store
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+!*.tfvars.example
+infra/terraform/.rendered/
+
+# Filled-in sensor config (never commit real decoy config)
+sensor/opencanary/opencanary.conf
+
+# Evidence: only sanitized artifacts are tracked; keep raw/unsanitized out
+evidence/logs/*.raw
+evidence/logs/*.log
+evidence/**/*.raw
+
+# Note: requirements.lock.txt is intentionally TRACKED (reproducibility).

@@ -1,0 +1,9 @@
+# Copy to terraform.tfvars and adjust. Example: 2 VMs, all three decoys.
+vm_count       = 2
+enabled_decoys = ["ssh", "http", "mysql"]
+
+# Optional overrides:
+# vm_image = "22.04"
+# vm_cpus  = 1
+# vm_mem   = "1G"
+# vm_disk  = "5G"

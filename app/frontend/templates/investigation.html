@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Investigation — Deception Detection Lab{% endblock %}
+{% block content %}
+<h1>Investigation</h1>
+<p class="muted">Per-event view. Showing {{ shown }} of {{ total }} events (most recent first).</p>
+
+<form class="filters" method="get">
+  <label>Service
+    <select name="service">
+      <option value="">any</option>
+      {% for s in ['ssh', 'http', 'mysql'] %}
+      <option value="{{ s }}" {{ 'selected' if filters.service == s }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Severity
+    <select name="severity">
+      <option value="">any</option>
+      {% for s in ['high', 'medium', 'low', 'info'] %}
+      <option value="{{ s }}" {{ 'selected' if filters.severity == s }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Source IP
+    <input type="text" name="src_ip" value="{{ filters.src_ip or '' }}" placeholder="e.g. 10.0.0.9">
+  </label>
+  <button type="submit">Filter</button>
+  <a class="btn-link" href="{{ url_for('investigation') }}">Reset</a>
+</form>
+
+<table class="grid" id="events">
+  <thead>
+    <tr>
+      <th>Time (UTC)</th><th>Sev</th><th>Service</th><th>Category</th>
+      <th>Source</th><th>User</th><th>Password (SHA-256)</th><th>Rules</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for e in events %}
+    <tr>
+      <td class="mono">{{ e.timestamp or '—' }}</td>
+      <td><span class="sev sev-{{ e.severity }}">{{ e.severity }}</span></td>
+      <td>{{ e.service or '—' }}</td>
+      <td>{{ e.event_category or '—' }}</td>
+      <td class="mono">{{ e.src_ip or '—' }}</td>
+      <td>{{ e.username or '—' }}</td>
+      <td class="mono small">{{ (e.password_sha256[:16] + '…') if e.password_sha256 else '—' }}</td>
+      <td>{% for r in e.rules %}<span class="tag">{{ r }}</span>{% endfor %}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8" class="muted">No events match.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

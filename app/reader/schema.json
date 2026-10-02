@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://honeypot.lab/schemas/normalized-event.json",
+  "title": "Normalized decoy event (event-contract v0.1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "timestamp",
+    "sensor_node",
+    "service",
+    "event_category",
+    "logtype_raw",
+    "src_ip",
+    "src_port",
+    "dst_port",
+    "username",
+    "password_present",
+    "password_sha256",
+    "http_path",
+    "user_agent",
+    "raw_logdata_keys"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": ["string", "null"], "format": "date-time" },
+    "sensor_node": { "type": ["string", "null"] },
+    "service": { "type": ["string", "null"], "enum": ["ssh", "http", "mysql", null] },
+    "event_category": {
+      "type": ["string", "null"],
+      "enum": ["connection", "request", "auth_attempt", null]
+    },
+    "logtype_raw": { "type": ["integer", "null"] },
+    "src_ip": { "type": ["string", "null"] },
+    "src_port": { "type": ["integer", "null"] },
+    "dst_port": { "type": ["integer", "null"] },
+    "username": { "type": ["string", "null"] },
+    "password_present": { "type": "boolean" },
+    "password_sha256": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "http_path": { "type": ["string", "null"] },
+    "user_agent": { "type": ["string", "null"] },
+    "raw_logdata_keys": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

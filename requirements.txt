@@ -1,0 +1,13 @@
+# Runtime dependencies (canonical manifest — used on the Linux sensor VM).
+# Versions are pinned in requirements.lock.txt after install via `pip freeze`.
+#
+# Note: opencanary has install friction on macOS/Windows; setup.sh installs it
+# best-effort locally and never lets it block the rest of the install. The Linux
+# VM is the authoritative install target for opencanary.
+opencanary
+pyyaml
+requests
+python-dotenv
+jsonschema
+# Frontend (Operations + Investigation dashboards)
+flask

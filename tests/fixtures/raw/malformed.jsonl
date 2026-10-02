@@ -1,0 +1,4 @@
+this is not json at all
+{"node_id": "decoy-01", "utc_time": "2026-10-01 12:00:30.000000", "logtype": 4002, "logdata": {"USERNAME": "x", "PASSWORD": "y"
+["a", "json", "array", "not", "an", "object"]
+{"node_id": "decoy-01", "utc_time": "2026-10-01 12:00:40.000000", "src_host": "198.51.100.5", "src_port": 5000, "dst_port": 9999, "logtype": 99999, "logdata": {}}
