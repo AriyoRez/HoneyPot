@@ -20,7 +20,7 @@ a running honeypot.
 1. **Capture** — OpenCanary on the Linux VM writes JSON events to
    `/var/log/opencanary/opencanary.log`.
 2. **Normalize + sanitize** — `app/reader` maps each raw event to the normalized
-   schema per [event-contract.md](event-contract.md) (v0.1): derives
+   schema per [event-contract.md](event-contract.md) (v0.2): derives
    service/category from `logtype`, hashes passwords (never stores plaintext),
    drops unmapped `logdata` values.
 3. **Detect** — `app/rules` evaluates the four use cases (unexpected interaction,

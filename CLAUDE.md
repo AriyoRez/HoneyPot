@@ -48,18 +48,25 @@ The goal is a **reproducible pipeline**, not just a running honeypot:
 
 ## Layout (each dir owned by one of four team roles)
 
-- `infra/` — Terraform / cloud-init provisioning (currently **stubbed**). *Infrastructure lead.*
+- `infra/` — local Multipass VM provisioning: Terraform + cloud-init template, plus a
+  no-Terraform `deploy.sh`/`deploy.ps1` fallback. *Infrastructure lead.*
 - `sensor/` — OpenCanary config template + fixtures. *Sensor lead.*
   - `sensor/opencanary/opencanary.conf.template` — JSON template; `_comment_*`
     keys are ignored by OpenCanary. MVP modules: ssh, http, mysql.
-- `app/` — custom frontend: `reader/` (log-reader Python pkg), `rules/`, `dashboards/`. *Detection lead.*
+- `app/` — custom frontend: `reader/` (log-reader Python pkg + `schema.json`),
+  `rules/` (detections), `frontend/` (Flask app + templates for the two dashboards). *Detection lead.*
 - `tests/` — `harness/` (target-restricted test client, Python pkg) + `fixtures/`. *Validation lead.*
 - `docs/` — architecture, network-policy, runbook, cost-model.
 - `evidence/` — **sanitized** acceptance-test screenshots/logs only. Raw `*.log` /
   `*.raw` are gitignored.
 
-Most code dirs are currently package stubs (`__init__.py` docstrings only) or
-`.gitkeep` placeholders — the scaffolding is in place; implementation is pending.
+The pipeline is built end-to-end: `app/reader` (normalize + sanitize, with
+`schema.json`), `app/rules` (the four detection use cases), and `app/frontend`
+(Flask app serving the Operations + Investigation dashboards) are implemented and
+covered by `tests/`. `infra/` provisions local Multipass VMs (Terraform +
+cloud-init, with a `deploy.*` fallback). Remaining stubs/placeholders are mainly
+host-specific `TODO:`s in docs/config and the `evidence/` screenshots captured at
+demo time.
 
 ## Dev environment
 

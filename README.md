@@ -11,11 +11,11 @@ Linux VM.
 See [docs/architecture.md](docs/architecture.md) for the system design.
 
 ## Repository layout
-- [infra/](infra/README.md) — IaC / provisioning stubs (infrastructure lead)
+- [infra/](infra/README.md) — local Multipass VM provisioning (Terraform + cloud-init, with a no-Terraform fallback) (infrastructure lead)
 - [sensor/](sensor/README.md) — OpenCanary config template + fixtures (sensor lead)
-- [app/](app/README.md) — custom frontend: log reader, detection rules, dashboards (detection lead)
+- [app/](app/README.md) — custom frontend: log reader, detection rules, Flask dashboards (detection lead)
 - [tests/](tests/README.md) — target-restricted test harness + fixtures (validation lead)
-- [docs/](docs/README.md) — architecture, runbook, network policy, cost model
+- [docs/](docs/README.md) — architecture, runbook, network policy, deception profile, event contract, cost model
 - [evidence/](evidence/README.md) — sanitized acceptance-test evidence only
 
 ## Getting started
@@ -33,3 +33,15 @@ The script creates `.venv`, installs dependencies, pins them to
 `requirements.lock.txt`, and copies `.env.example` to `.env`. It is safe to
 re-run. OpenCanary itself may fail to install on macOS/Windows — that is expected;
 the authoritative install target is the Linux VM.
+
+## Run the dashboards
+Point the frontend at an OpenCanary JSONL log (a captured log, or a fixture such
+as [tests/fixtures/raw/opencanary_sample.jsonl](tests/fixtures/raw/opencanary_sample.jsonl)):
+
+```bash
+python -m app.frontend --log tests/fixtures/raw/opencanary_sample.jsonl   # http://127.0.0.1:8000/
+```
+
+Operations view at `/`, Investigation view at `/investigation`. Run the test
+suite with `pytest`. See [app/README.md](app/README.md) and
+[docs/architecture.md](docs/architecture.md) for the full pipeline.
