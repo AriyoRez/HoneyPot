@@ -1,7 +1,7 @@
 """Normalize raw OpenCanary log events into the approved event contract.
 
 The mapping implemented here is the canonical one documented in
-``docs/event-contract.md`` (v0.1). The ``logtype`` codes and ``logdata`` keys are
+``docs/event-contract.md`` (v0.2). The ``logtype`` codes and ``logdata`` keys are
 taken from OpenCanary 0.9.10 source, not documentation.
 """
 
@@ -69,6 +69,7 @@ def normalize_event(raw: dict) -> dict:
         "logtype_raw": logtype,
         "src_ip": raw.get("src_host"),
         "src_port": raw.get("src_port"),
+        "dst_ip": raw.get("dst_host"),
         "dst_port": raw.get("dst_port"),
         "username": username,
         "password_present": present,

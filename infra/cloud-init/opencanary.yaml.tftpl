@@ -20,6 +20,11 @@ packages:
 write_files:
   # Non-identifying node label — never a real hostname.
   # Path is one of OpenCanary's config search locations (it has no --config flag).
+  # Banners are FAKE but consistent with one OS persona (Ubuntu 22.04) for
+  # believability. Ports stay UNPRIVILEGED here: Multipass manages this guest over
+  # SSH on :22, so the decoy must not clobber it. For the believable standard-port
+  # profile (22/80/3306) on a dedicated decoy host, see docs/deception-profile.md
+  # (dual-NIC separation or a 22->2222 / 80->8080 host redirect).
   - path: /etc/opencanaryd/opencanary.conf
     permissions: "0640"
     content: |
@@ -30,16 +35,16 @@ write_files:
 
           "ssh.enabled": ${contains(enabled_decoys, "ssh")},
           "ssh.port": 2222,
-          "ssh.version": "SSH-2.0-OpenSSH_X.Y_PLACEHOLDER",
+          "ssh.version": "SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.10",
 
           "http.enabled": ${contains(enabled_decoys, "http")},
           "http.port": 8080,
-          "http.banner": "Server: PLACEHOLDER-Web/0.0",
+          "http.banner": "Server: nginx/1.18.0 (Ubuntu)",
           "http.skin": "basicLogin",
 
           "mysql.enabled": ${contains(enabled_decoys, "mysql")},
           "mysql.port": 3306,
-          "mysql.banner": "5.X.Y-PLACEHOLDER",
+          "mysql.banner": "8.0.36-0ubuntu0.22.04.1",
 
           "logger": {
               "class": "PyLogger",

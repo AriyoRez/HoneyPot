@@ -3,27 +3,65 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Deception Detection Lab{% endblock %}</title>
+  <title>{% block title %}Deception Lab{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">🕳️ Deception Detection Lab</div>
-    <nav>
-      <a href="{{ url_for('operations') }}" class="{{ 'active' if request.endpoint == 'operations' }}">Operations</a>
-      <a href="{{ url_for('investigation') }}" class="{{ 'active' if request.endpoint == 'investigation' }}">Investigation</a>
-    </nav>
-    <div class="live">
-      <label><input type="checkbox" id="autorefresh" checked> Live (5s)</label>
-      <span id="refreshed" class="muted"></span>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M16 2 4 6v8c0 7 4.6 11.5 12 16 7.4-4.5 12-9 12-16V6L16 2Z"
+              fill="none" stroke="#e4002b" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="16" cy="14" r="4.6" fill="#e4002b"/>
+      </svg>
+      <div>
+        <span class="brand-name">CLOWN<span class="k">STRIKE</span></span>
+        <span class="brand-sub">DECOY CONSOLE</span>
+      </div>
     </div>
-  </header>
-  <main>
-    {% block content %}{% endblock %}
-  </main>
-  <footer class="muted">
-    Lab environment — synthetic data only. Passwords shown as SHA-256 only; no plaintext is stored.
-  </footer>
-  <script src="{{ url_for('static', filename='app.js') }}"></script>
+
+    <nav class="nav">
+      <a class="nav-item {{ 'active' if request.endpoint == 'operations' }}" href="{{ url_for('operations') }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        Operations
+      </a>
+      <a class="nav-item {{ 'active' if request.endpoint == 'investigation' }}" href="{{ url_for('investigation') }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        Investigation
+      </a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="sensor">
+        <span class="dot {{ 'dot-ok' if nav.total else '' }}"></span>
+        <div>
+          <div class="sensor-label">SENSOR</div>
+          <div class="sensor-val mono">{{ nav.total }} events · {{ nav.alerts }} alerts</div>
+        </div>
+      </div>
+      <div class="tagline">"We stop breaches. Eventually."</div>
+      <div class="env-tag">LAB · SYNTHETIC</div>
+    </div>
+  </aside>
+
+  <section class="main">
+    <header class="pagehead">
+      <div>
+        <h1>{% block pagetitle %}{% endblock %}</h1>
+        <div class="crumb">{% block subtitle %}{% endblock %}</div>
+      </div>
+      <div class="status">
+        <span class="dot dot-live" id="liveDot"></span>
+        <span class="mono small" id="liveText">Live</span>
+        <button class="ghost-btn" id="pauseBtn" type="button">Pause</button>
+      </div>
+    </header>
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+  </section>
+</div>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

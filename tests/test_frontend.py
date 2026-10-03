@@ -31,6 +31,52 @@ def test_investigation_renders(client):
     assert "Investigation" in r.get_data(as_text=True)
 
 
+def test_soc_shell_and_no_emoji(client):
+    # Redesign: ClownStrike console shell present, old emoji wordmark gone.
+    body = client.get("/").get_data(as_text=True)
+    assert "CLOWN" in body and "STRIKE" in body   # parody wordmark
+    assert "🕳️" not in body                        # no emoji
+    assert 'class="sidebar"' in body              # sidebar layout
+
+
+def test_severity_renders_on_operations(client):
+    # High-severity findings must render with the severity class (not color alone).
+    body = client.get("/").get_data(as_text=True)
+    assert "sev-high" in body
+    assert "Detections by severity" in body
+
+
+def test_charts_render_on_operations(client):
+    body = client.get("/").get_data(as_text=True)
+    assert "Events over time" in body
+    assert "Top sources" in body
+    assert "Events by service" in body
+    assert "By decoy" in body                       # per-decoy breakdown
+    assert "decoy-01" in body                        # the generated node label
+    assert "<svg" in body                          # inline sparkline
+
+
+def test_api_events_carry_dst_ip(client):
+    events = client.get("/api/events").get_json()
+    assert events
+    assert all("dst_ip" in e for e in events)
+
+
+def test_api_events_filter_by_sensor_node(client):
+    r = client.get("/api/events?sensor_node=decoy-01")
+    events = r.get_json()
+    assert events  # generator labels every event decoy-01
+    assert all(e["sensor_node"] == "decoy-01" for e in events)
+    assert client.get("/api/events?sensor_node=nope").get_json() == []
+
+
+def test_self_hosted_fonts_referenced(client):
+    css = client.get("/static/style.css").get_data(as_text=True)
+    assert "Space Grotesk" in css
+    assert "JetBrains Mono" in css
+    assert ".woff2" in css
+
+
 def test_api_summary_shape(client):
     r = client.get("/api/summary")
     assert r.status_code == 200

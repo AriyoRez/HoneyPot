@@ -13,12 +13,17 @@ passwords, so no plaintext can reach a template or response.
 
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
 
+from app.frontend.charts import by_decoy, donut, time_series, top_sources
 from app.reader import read_log
 from app.rules import evaluate
+
+# Severity order used for the Operations severity bar + legend.
+SEVERITY_ORDER = ("high", "medium", "low", "info")
 
 
 def _load(log_path: str | Path) -> dict:
@@ -30,11 +35,18 @@ def _load(log_path: str | Path) -> dict:
     return evaluate(events)
 
 
+def _nav(data: dict) -> dict:
+    """Small context for the sidebar, present on every page."""
+    h = data["health"]
+    return {"total": h["total_events"], "alerts": h["alert_count"]}
+
+
 def _filter_events(events: list[dict]) -> list[dict]:
-    """Apply optional query-param filters (service, severity, src_ip)."""
+    """Apply optional query-param filters (service, severity, src_ip, sensor_node)."""
     service = request.args.get("service")
     severity = request.args.get("severity")
     src_ip = request.args.get("src_ip")
+    sensor_node = request.args.get("sensor_node")
     out = events
     if service:
         out = [e for e in out if e.get("service") == service]
@@ -42,6 +54,8 @@ def _filter_events(events: list[dict]) -> list[dict]:
         out = [e for e in out if e.get("severity") == severity]
     if src_ip:
         out = [e for e in out if e.get("src_ip") == src_ip]
+    if sensor_node:
+        out = [e for e in out if e.get("sensor_node") == sensor_node]
     return out
 
 
@@ -52,11 +66,18 @@ def create_app(log_path: str | Path) -> Flask:
     @app.route("/")
     def operations():
         data = _load(app.config["LOG_PATH"])
+        sev = Counter(f["severity"] for f in data["findings"])
+        sev_counts = [(lvl, sev.get(lvl, 0)) for lvl in SEVERITY_ORDER]
         return render_template(
             "operations.html",
             health=data["health"],
             findings=data["findings"],
-            log_path=app.config["LOG_PATH"],
+            sev_counts=sev_counts,
+            donut=donut(sev_counts),
+            timeseries=time_series(data["events"]),
+            top_sources=top_sources(data["events"]),
+            by_decoy=by_decoy(data["events"]),
+            nav=_nav(data),
         )
 
     @app.route("/investigation")
@@ -70,7 +91,8 @@ def create_app(log_path: str | Path) -> Flask:
             events=events,
             total=len(data["events"]),
             shown=len(events),
-            filters={k: request.args.get(k) for k in ("service", "severity", "src_ip")},
+            filters={k: request.args.get(k) for k in ("service", "severity", "src_ip", "sensor_node")},
+            nav=_nav(data),
         )
 
     @app.route("/api/summary")

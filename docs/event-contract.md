@@ -1,6 +1,6 @@
-# Event Contract (v0.1)
+# Event Contract (v0.2)
 
-> **Status: approved v0.1.** This is the canonical contract between the OpenCanary
+> **Status: approved v0.2.** This is the canonical contract between the OpenCanary
 > log and everything downstream. The reader (`app/reader/`) produces normalized
 > events in this shape; rules (`app/rules/`), dashboards (`app/dashboards/`), and
 > test fixtures (`tests/fixtures/`) consume them. Change this doc first, then the
@@ -33,7 +33,8 @@ The pipeline is `OpenCanary log → reader (normalize + sanitize) → normalized
 | `logtype_raw` | int | `logtype` | Raw code kept for traceability. |
 | `src_ip` | string | `src_host` | Attacker IP (synthetic). Mask last octet in `evidence/`. |
 | `src_port` | int | `src_port` | |
-| `dst_port` | int | `dst_port` | |
+| `dst_ip` | string \| null | `dst_host` | The **decoy's own** listening IP. Lets the GUI tell decoys/hosts apart in a fleet. Mask last octet in `evidence/`. |
+| `dst_port` | int | `dst_port` | Which decoy service was hit (e.g. 22/80/3306). |
 | `username` | string \| null | `logdata.USERNAME` | Present on auth attempts. |
 | `password_present` | bool | `logdata.PASSWORD` exists | Never store the value. |
 | `password_sha256` | string \| null | SHA-256 of `logdata.PASSWORD` | One-way; null when no password. |
@@ -68,7 +69,13 @@ never silently drop it — surfacing unmapped types is part of pipeline health.
 | Multi-service probing | One `src_ip` seen across ≥2 distinct `service` values. |
 | Pipeline health | `sensor_node` + `timestamp` freshness + event counts + unmapped-logtype rate. |
 
-## Open items (v0.2+)
+## Changelog
+
+- **v0.2** — added `dst_ip` (from OpenCanary `dst_host`): the decoy's own listening
+  address, so the frontend can distinguish decoys/hosts in a multi-decoy fleet (the
+  attacker `src_ip` is often shared across services). Mask its last octet in `evidence/`.
+
+## Open items (v0.3+)
 
 - logtype codes and `logdata` keys are verified against OpenCanary 0.9.10 source
   (`logger.py`, `modules/{ssh,http,mysql}.py`). Spot-check once against a live

@@ -39,6 +39,18 @@ def test_logtype_derivation(logtype, service, category):
     assert out["logtype_raw"] == logtype
 
 
+def test_dst_ip_maps_from_dst_host():
+    out = normalize_event(_raw(4000, dst_host="203.0.113.10"))
+    assert out["dst_ip"] == "203.0.113.10"
+    assert out["dst_port"] == 22
+
+
+def test_dst_ip_missing_becomes_none():
+    raw = _raw(4000)
+    del raw["dst_host"]
+    assert normalize_event(raw)["dst_ip"] is None
+
+
 def test_unmapped_logtype_is_surfaced_not_dropped():
     out = normalize_event(_raw(99999))
     assert out["service"] is None

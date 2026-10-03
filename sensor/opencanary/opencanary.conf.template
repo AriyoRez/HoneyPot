@@ -15,6 +15,18 @@
 # comment block above before use if your tooling requires pure JSON.
 #
 # MVP decoy modules enabled here: ssh, http, mysql.
+#
+# REALISM / BELIEVABILITY (see docs/deception-profile.md):
+#   - Decoys use STANDARD ports (22/80/3306) so they blend in with real internal
+#     hosts. Non-standard ports (2222/8080) are a classic honeypot tell.
+#   - Ports <1024 require privilege: run opencanaryd as root OR grant the Python
+#     interpreter `cap_net_bind_service`.
+#   - The host's REAL management sshd must NOT also sit on :22. Move it to a
+#     management interface/port (dual-NIC decoy pattern) before enabling ssh on 22,
+#     or front the decoy with a host-level redirect (22->2222). See deception-profile.
+#   - Banners below are FAKE but INTERNALLY CONSISTENT with one OS persona
+#     (Ubuntu 22.04 LTS / "jammy"). Mismatched versions (SSH vs MySQL vs OS) are a
+#     tell — keep SSH/HTTP/MySQL versions consistent with the VM you actually run.
 # =============================================================================
 {
     "_comment_device": "Identify this decoy node in logs / the frontend. Use a non-identifying label.",
@@ -23,21 +35,21 @@
     "ip.ignorelist": [],
     "logtype.ignorelist": [],
 
-    "_comment_ssh": "Fake SSH decoy. Placeholder port + fake version banner.",
+    "_comment_ssh": "SSH decoy on the standard port. Version string matches the Ubuntu 22.04 persona; tune to the real VM. Needs privilege to bind :22 (see header).",
     "ssh.enabled": true,
-    "ssh.port": 2222,
-    "ssh.version": "SSH-2.0-OpenSSH_X.Y_PLACEHOLDER",
+    "ssh.port": 22,
+    "ssh.version": "SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.10",
 
-    "_comment_http": "Fake HTTP decoy. Placeholder port + fake server banner/skin.",
+    "_comment_http": "HTTP web-admin decoy on the standard port. Server header + skin should tell one consistent story (nginx on Ubuntu). Skin choice is itself fingerprintable.",
     "http.enabled": true,
-    "http.port": 8080,
-    "http.banner": "Server: PLACEHOLDER-Web/0.0",
+    "http.port": 80,
+    "http.banner": "Server: nginx/1.18.0 (Ubuntu)",
     "http.skin": "basicLogin",
 
-    "_comment_mysql": "Fake MySQL decoy. Placeholder port + fake version banner.",
+    "_comment_mysql": "MySQL decoy on the standard port. Version banner consistent with the Ubuntu 22.04 persona's packaged MySQL.",
     "mysql.enabled": true,
     "mysql.port": 3306,
-    "mysql.banner": "5.X.Y-PLACEHOLDER",
+    "mysql.banner": "8.0.36-0ubuntu0.22.04.1",
 
     "_comment_logger": "Local file logging on the VM. The custom frontend (app/reader) reads these events directly for display.",
     "logger": {

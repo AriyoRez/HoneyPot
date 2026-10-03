@@ -1,55 +1,51 @@
 {% extends "base.html" %}
-{% block title %}Investigation — Deception Detection Lab{% endblock %}
+{% block title %}Investigation — Deception Lab{% endblock %}
+{% block pagetitle %}Investigation{% endblock %}
+{% block subtitle %}Per-event detail (most recent first){% endblock %}
 {% block content %}
-<h1>Investigation</h1>
-<p class="muted">Per-event view. Showing {{ shown }} of {{ total }} events (most recent first).</p>
 
-<form class="filters" method="get">
-  <label>Service
-    <select name="service">
+<form class="toolbar" method="get">
+  <div class="field">
+    <label for="f-service">Service</label>
+    <select id="f-service" name="service">
       <option value="">any</option>
-      {% for s in ['ssh', 'http', 'mysql'] %}
-      <option value="{{ s }}" {{ 'selected' if filters.service == s }}>{{ s }}</option>
-      {% endfor %}
+      {% for s in ['ssh', 'http', 'mysql'] %}<option value="{{ s }}" {{ 'selected' if filters.service == s }}>{{ s }}</option>{% endfor %}
     </select>
-  </label>
-  <label>Severity
-    <select name="severity">
+  </div>
+  <div class="field">
+    <label for="f-sev">Severity</label>
+    <select id="f-sev" name="severity">
       <option value="">any</option>
-      {% for s in ['high', 'medium', 'low', 'info'] %}
-      <option value="{{ s }}" {{ 'selected' if filters.severity == s }}>{{ s }}</option>
-      {% endfor %}
+      {% for s in ['high', 'medium', 'low', 'info'] %}<option value="{{ s }}" {{ 'selected' if filters.severity == s }}>{{ s }}</option>{% endfor %}
     </select>
-  </label>
-  <label>Source IP
-    <input type="text" name="src_ip" value="{{ filters.src_ip or '' }}" placeholder="e.g. 10.0.0.9">
-  </label>
-  <button type="submit">Filter</button>
-  <a class="btn-link" href="{{ url_for('investigation') }}">Reset</a>
+  </div>
+  <div class="field">
+    <label for="f-ip">Source IP</label>
+    <input id="f-ip" type="text" name="src_ip" value="{{ filters.src_ip or '' }}" placeholder="e.g. 198.51.100.23">
+  </div>
+  <div class="field">
+    <label for="f-decoy">Decoy</label>
+    <input id="f-decoy" type="text" name="sensor_node" value="{{ filters.sensor_node or '' }}" placeholder="e.g. decoy-01">
+  </div>
+  <button class="apply" type="submit">Apply</button>
+  <a class="reset" href="{{ url_for('investigation') }}">Reset</a>
+  <span class="result">{{ shown }} of {{ total }} events</span>
 </form>
 
-<table class="grid" id="events">
-  <thead>
-    <tr>
-      <th>Time (UTC)</th><th>Sev</th><th>Service</th><th>Category</th>
-      <th>Source</th><th>User</th><th>Password (SHA-256)</th><th>Rules</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for e in events %}
-    <tr>
-      <td class="mono">{{ e.timestamp or '—' }}</td>
-      <td><span class="sev sev-{{ e.severity }}">{{ e.severity }}</span></td>
-      <td>{{ e.service or '—' }}</td>
-      <td>{{ e.event_category or '—' }}</td>
-      <td class="mono">{{ e.src_ip or '—' }}</td>
-      <td>{{ e.username or '—' }}</td>
-      <td class="mono small">{{ (e.password_sha256[:16] + '…') if e.password_sha256 else '—' }}</td>
-      <td>{% for r in e.rules %}<span class="tag">{{ r }}</span>{% endfor %}</td>
-    </tr>
-    {% else %}
-    <tr><td colspan="8" class="muted">No events match.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="panel stream">
+  {% for e in events %}
+  <div class="event rowsev-{{ e.severity }}">
+    <span class="ev-time mono">{{ e.timestamp or '—' }}</span>
+    <span class="sev sev-{{ e.severity }}">{{ e.severity }}</span>
+    <span class="ev-svc">{{ e.service or 'unmapped' }}<span class="ev-cat">/{{ e.event_category or '—' }}</span></span>
+    <span class="ev-kv mono">src=<b>{{ e.src_ip or '—' }}</b></span>
+    <span class="ev-kv mono" title="decoy node / listening address">decoy=<b>{{ e.sensor_node or '—' }}</b>{% if e.dst_port %}<span class="ev-cat">@{{ e.dst_ip or '*' }}:{{ e.dst_port }}</span>{% endif %}</span>
+    {% if e.username %}<span class="ev-kv mono">user=<b>{{ e.username }}</b></span>{% endif %}
+    {% if e.password_sha256 %}<span class="ev-kv mono hash" title="{{ e.password_sha256 }}">pw=<b>{{ e.password_sha256[:12] }}…</b></span>{% endif %}
+    <span class="ev-rules">{% for r in e.rules %}<span class="tag">{{ r.replace('_', ' ') }}</span>{% endfor %}</span>
+  </div>
+  {% else %}
+  <div class="empty">No events match the current filters.</div>
+  {% endfor %}
+</div>
 {% endblock %}

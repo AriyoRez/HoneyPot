@@ -1,71 +1,169 @@
 {% extends "base.html" %}
-{% block title %}Operations — Deception Detection Lab{% endblock %}
+{% block title %}Operations — Deception Lab{% endblock %}
+{% block pagetitle %}Operations{% endblock %}
+{% block subtitle %}Pipeline health and active detections{% endblock %}
 {% block content %}
-<h1>Operations</h1>
-<p class="muted">Pipeline health and active detections from <code>{{ log_path }}</code>.</p>
 
-<section class="tiles" id="tiles">
-  <div class="tile">
-    <div class="tile-label">Total events</div>
-    <div class="tile-value">{{ health.total_events }}</div>
+<section class="stats">
+  <div class="stat">
+    <div class="stat-k">Total events</div>
+    <div class="stat-v mono">{{ health.total_events }}</div>
   </div>
-  <div class="tile {{ 'tile-alert' if health.alert_count else '' }}">
-    <div class="tile-label">Alerts</div>
-    <div class="tile-value">{{ health.alert_count }}</div>
+  <div class="stat">
+    <div class="stat-k">Alerts</div>
+    <div class="stat-v mono alert {{ 'zero' if not health.alert_count }}">{{ health.alert_count }}</div>
   </div>
-  <div class="tile">
-    <div class="tile-label">Distinct sources</div>
-    <div class="tile-value">{{ health.distinct_sources }}</div>
+  <div class="stat">
+    <div class="stat-k">Distinct sources</div>
+    <div class="stat-v mono">{{ health.distinct_sources }}</div>
   </div>
-  <div class="tile">
-    <div class="tile-label">Unmapped rate</div>
-    <div class="tile-value">{{ (health.unmapped_rate * 100) | round(1) }}%</div>
+  <div class="stat">
+    <div class="stat-k">Unmapped rate</div>
+    <div class="stat-v mono">{{ (health.unmapped_rate * 100) | round(1) }}<span class="muted" style="font-size:15px">%</span></div>
   </div>
-  <div class="tile tile-wide">
-    <div class="tile-label">Last event</div>
-    <div class="tile-value small">{{ health.last_event or '—' }}</div>
+  <div class="stat">
+    <div class="stat-k">Last event (UTC)</div>
+    <div class="stat-v sub mono">{{ health.last_event or '—' }}</div>
   </div>
 </section>
 
-<section class="split">
-  <div>
-    <h2>Events by service</h2>
-    <table class="kv">
-      {% for svc, n in health.events_by_service.items() %}
-      <tr><td>{{ svc }}</td><td>{{ n }}</td></tr>
-      {% else %}<tr><td class="muted" colspan="2">none</td></tr>{% endfor %}
-    </table>
-  </div>
-  <div>
-    <h2>Events by category</h2>
-    <table class="kv">
-      {% for cat, n in health.events_by_category.items() %}
-      <tr><td>{{ cat }}</td><td>{{ n }}</td></tr>
-      {% else %}<tr><td class="muted" colspan="2">none</td></tr>{% endfor %}
-    </table>
-  </div>
-</section>
-
-<section>
-  <h2>Findings <span class="muted">({{ findings | length }})</span></h2>
-  <table class="grid" id="findings">
-    <thead>
-      <tr><th>Severity</th><th>Use case</th><th>Source</th><th>Service</th><th>Count</th><th>Summary</th></tr>
-    </thead>
-    <tbody>
-      {% for f in findings %}
-      <tr>
-        <td><span class="sev sev-{{ f.severity }}">{{ f.severity }}</span></td>
-        <td>{{ f.use_case }}</td>
-        <td>{{ f.src_ip or '—' }}</td>
-        <td>{{ f.service or '—' }}</td>
-        <td>{{ f.count }}</td>
-        <td>{{ f.summary }}</td>
-      </tr>
+<div class="charts">
+  <section class="panel">
+    <div class="panel-head">Events over time <span class="count">· last {{ timeseries.total }}</span></div>
+    <div class="panel-body">
+      {% if timeseries.total %}
+      <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" aria-label="events over time">
+        <path class="area" d="{{ timeseries.area }}"/>
+        <polyline class="line" points="{{ timeseries.line }}"/>
+      </svg>
+      <div class="spark-labels"><span class="mono">{{ timeseries.start }}</span><span class="mono">peak {{ timeseries.max }}</span><span class="mono">{{ timeseries.end }}</span></div>
       {% else %}
-      <tr><td colspan="6" class="muted">No findings — no decoy interactions detected.</td></tr>
+      <div class="muted">No timestamped events yet.</div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">Events by service</div>
+    <div class="panel-body">
+      {% set svc_max = (health.events_by_service.values() | max) if health.events_by_service else 0 %}
+      {% if svc_max %}
+      <div class="hbars">
+        {% for svc, n in health.events_by_service.items() %}
+        <div class="hbar">
+          <span class="hbar-k">{{ svc }}</span>
+          <span class="hbar-track"><span class="hbar-fill" style="width: {{ (n / svc_max * 100) | round }}%"></span></span>
+          <span class="hbar-v">{{ n }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}<div class="muted">No service events.</div>{% endif %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">Top sources</div>
+    <div class="panel-body">
+      {% if top_sources %}
+      <div class="hbars">
+        {% for s in top_sources %}
+        <div class="hbar">
+          <span class="hbar-k mono">{{ s.src_ip }}</span>
+          <span class="hbar-track"><span class="hbar-fill alt" style="width: {{ s.pct }}%"></span></span>
+          <span class="hbar-v">{{ s.count }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}<div class="muted">No sources yet.</div>{% endif %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">By decoy <span class="count">· which decoy/host was hit</span></div>
+    <div class="panel-body">
+      {% if by_decoy %}
+      <div class="hbars">
+        {% for d in by_decoy %}
+        <div class="hbar">
+          <span class="hbar-k mono" title="services: {{ d.services }}">{{ d.node }}<span class="muted"> · {{ d.services }}</span></span>
+          <span class="hbar-track"><span class="hbar-fill" style="width: {{ d.pct }}%"></span></span>
+          <span class="hbar-v">{{ d.count }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}<div class="muted">No decoy activity yet.</div>{% endif %}
+    </div>
+  </section>
+</div>
+
+<div class="detect-row">
+  <section class="panel">
+    <div class="panel-head">Detections by severity</div>
+    <div class="panel-body donut-wrap">
+      {% if donut.total %}
+      <svg class="donut" viewBox="0 0 120 120" aria-label="detections by severity">
+        <circle class="donut-track" cx="60" cy="60" r="{{ donut.radius }}"/>
+        <g transform="rotate(-90 60 60)">
+          {% for s in donut.slices %}
+          <circle class="donut-seg seg-{{ s.level }}" cx="60" cy="60" r="{{ donut.radius }}"
+                  stroke-dasharray="{{ s.dash }} {{ s.gap }}" stroke-dashoffset="{{ s.offset }}">
+            <title>{{ s.level }}: {{ s.count }} ({{ s.pct }}%)</title>
+          </circle>
+          {% endfor %}
+        </g>
+        <text class="donut-total" x="60" y="59">{{ donut.total }}</text>
+        <text class="donut-sub" x="60" y="74">findings</text>
+      </svg>
+      <div class="legend">
+        {% for level, n in sev_counts %}{% if n %}
+        <span class="legend-item"><span class="legend-sw seg-{{ level }}"></span>{{ level }}<span class="muted mono">{{ n }}</span></span>
+        {% endif %}{% endfor %}
+      </div>
+      {% else %}
+      <div class="muted">No detections — no decoy interactions.</div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">Findings <span class="count">· {{ findings | length }}</span></div>
+    <div class="feed">
+      {% for f in findings %}
+      <div class="alert rowsev-{{ f.severity }}">
+        <span class="sev sev-{{ f.severity }}">{{ f.severity }}</span>
+        <div class="alert-main">
+          <div class="alert-title">{{ f.use_case.replace('_', ' ') }}</div>
+          <div class="alert-meta">{{ f.summary }}</div>
+        </div>
+        <div class="alert-side">
+          <span class="alert-count mono">{{ f.count }}</span>
+          <span class="alert-count-k">events</span>
+        </div>
+      </div>
+      {% else %}
+      <div class="empty">No findings — no decoy interactions detected.</div>
       {% endfor %}
-    </tbody>
-  </table>
+    </div>
+  </section>
+</div>
+
+<section class="panel">
+  <div class="panel-head">Event volume</div>
+  <div class="panel-body split">
+    <div>
+      <div class="stat-k" style="margin-bottom:8px">By service</div>
+      <table class="kv">
+        {% for svc, n in health.events_by_service.items() %}<tr><td>{{ svc }}</td><td>{{ n }}</td></tr>
+        {% else %}<tr><td class="muted" colspan="2">none</td></tr>{% endfor %}
+      </table>
+    </div>
+    <div>
+      <div class="stat-k" style="margin-bottom:8px">By category</div>
+      <table class="kv">
+        {% for cat, n in health.events_by_category.items() %}<tr><td>{{ cat }}</td><td>{{ n }}</td></tr>
+        {% else %}<tr><td class="muted" colspan="2">none</td></tr>{% endfor %}
+      </table>
+    </div>
+  </div>
 </section>
 {% endblock %}

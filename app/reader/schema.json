@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://honeypot.lab/schemas/normalized-event.json",
-  "title": "Normalized decoy event (event-contract v0.1)",
+  "title": "Normalized decoy event (event-contract v0.2)",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -13,6 +13,7 @@
     "logtype_raw",
     "src_ip",
     "src_port",
+    "dst_ip",
     "dst_port",
     "username",
     "password_present",
@@ -33,6 +34,7 @@
     "logtype_raw": { "type": ["integer", "null"] },
     "src_ip": { "type": ["string", "null"] },
     "src_port": { "type": ["integer", "null"] },
+    "dst_ip": { "type": ["string", "null"] },
     "dst_port": { "type": ["integer", "null"] },
     "username": { "type": ["string", "null"] },
     "password_present": { "type": "boolean" },

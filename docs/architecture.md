@@ -8,7 +8,9 @@ JSON log, normalizes + sanitizes each event, applies detection rules, and surfac
 the results as two live dashboards. The goal is a reproducible *pipeline*, not just
 a running honeypot.
 
-- **MVP decoys:** ssh (port 2222), http (port 8080), mysql (port 3306).
+- **MVP decoys:** ssh, http (web-admin), mysql. Believable profile uses standard ports
+  (22/80/3306) with OS-consistent banners; the local Multipass lab keeps 2222/8080/3306
+  to coexist with Multipass management. See [deception-profile.md](deception-profile.md).
 - **MVP goal:** any interaction with a decoy is suspicious; detect and triage it.
 - **Stack:** Python. `app/reader` (normalize + sanitize), `app/rules` (detections),
   `app/frontend` (Flask web app, two dashboard views). Sensor deploy via
@@ -34,8 +36,9 @@ OpenCanary (VM) ──log──> app/reader ──normalized──> app/rules �
 
 ## Network Policy Table
 See [network-policy.md](network-policy.md). Summary: attacker/lab → decoy ports on
-the VM; the analysis host reads the decoy log (pull/ship); management SSH on 22 is
-separate from the decoy SSH on 2222; no public exposure.
+the VM; the analysis host reads the decoy log (pull/ship); management access is kept
+separate from the decoy SSH (Multipass manages the guest over :22, so the lab decoy
+uses 2222); no public exposure.
 
 ## Access Boundaries
 - **Who may reach the decoy VM:** only the lab network. The VM is never publicly
