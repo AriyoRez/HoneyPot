@@ -75,10 +75,19 @@ never silently drop it — surfacing unmapped types is part of pipeline health.
   address, so the frontend can distinguish decoys/hosts in a multi-decoy fleet (the
   attacker `src_ip` is often shared across services). Mask its last octet in `evidence/`.
 
+## Verification status
+
+- **logtype codes verified 2026-10-27** against a live sensor, not just documentation.
+  The `LOG_*` constants were read from `opencanary/logger.py` in the installed
+  package on decoy VM `decoy-0` (opencanary **0.9.10**, Python 3.10.12). All nine
+  codes mapped in `app/reader/normalize.py` match exactly:
+  `4000/4001/4002` (ssh), `3000/3001/3002/3003` (http), `8001/9003` (mysql).
+  Re-run this check whenever the sensor's opencanary version changes.
+
 ## Open items (v0.3+)
 
-- logtype codes and `logdata` keys are verified against OpenCanary 0.9.10 source
-  (`logger.py`, `modules/{ssh,http,mysql}.py`). Spot-check once against a live
-  capture from the sensor VM before declaring v1.0.
 - Decide whether to add a `probe` category (e.g. port-scan logtypes) once non-MVP
-  modules are in scope.
+  modules are in scope. OpenCanary 0.9.10 exposes `5001`–`5005`
+  (`LOG_PORT_SYN`, `LOG_PORT_NMAPOS`, `LOG_PORT_NMAPNULL`, `LOG_PORT_NMAPXMAS`,
+  `LOG_PORT_NMAPFIN`) via its `portscan` module — these are the natural first
+  members of that category.

@@ -1,4 +1,4 @@
-"""Detection rules over normalized decoy events (event-contract v0.1).
+"""Detection rules over normalized decoy events (event-contract v0.2).
 
 Implements the project's four detection use cases as pure functions, each
 carrying a severity and an alert verdict. The web frontend consumes these for

@@ -50,21 +50,41 @@ write_files:
           "ssh.enabled": $sshEn, "ssh.port": 2222,
           "ssh.version": "SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.10",
           "http.enabled": $httpEn, "http.port": 8080,
-          "http.banner": "Server: nginx/1.18.0 (Ubuntu)", "http.skin": "basicLogin",
+          "http.banner": "nginx/1.18.0 (Ubuntu)", "http.skin": "basicLogin",
           "mysql.enabled": $mysqlEn, "mysql.port": 3306,
-          "mysql.banner": "8.0.36-0ubuntu0.22.04.1",
+          "mysql.banner": "5.5.5-10.6.12-MariaDB-0ubuntu0.22.04.1",
           "logger": {"class": "PyLogger", "kwargs": {
               "formatters": {"plain": {"format": "%(message)s"}},
               "handlers": {"file": {"class": "logging.FileHandler",
                   "filename": "/var/log/opencanary/opencanary.log"}}}}
       }
+
+  # Run the decoy under systemd so it comes back after a reboot. NOTE: the unit
+  # uses 'opencanaryd --dev' (foreground) deliberately -- '--start' daemonizes,
+  # which Type=simple would mis-track as an immediately-dead service.
+  - path: /etc/systemd/system/opencanary.service
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=OpenCanary decoy (lab)
+      After=network-online.target
+      Wants=network-online.target
+
+      [Service]
+      Type=simple
+      ExecStart=/opt/opencanary/venv/bin/opencanaryd --dev
+      Restart=on-failure
+
+      [Install]
+      WantedBy=multi-user.target
 runcmd:
   - mkdir -p /var/log/opencanary
   - python3 -m venv /opt/opencanary/venv
   - /opt/opencanary/venv/bin/pip install --upgrade pip
   - /opt/opencanary/venv/bin/pip install opencanary scapy
   - bash -c 'SK=`$(find /opt/opencanary/venv -type d -name basicLogin 2>/dev/null | head -1); [ -n "`$SK" ] && [ ! -f "`$SK/redirect.html" ] && echo "<html><body>Redirecting...</body></html>" > "`$SK/redirect.html"; true'
-  - /opt/opencanary/venv/bin/opencanaryd --start
+  - systemctl daemon-reload
+  - systemctl enable --now opencanary.service
 "@
     Set-Content -Path $ci -Value $content -Encoding utf8
     Write-Host "==> launching $Prefix-$i (ssh=$sshEn http=$httpEn mysql=$mysqlEn)"

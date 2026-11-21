@@ -35,7 +35,16 @@ Mismatched versions are themselves a tell.
 - **Persona (lab default):** Ubuntu 22.04 LTS ("jammy").
 - SSH banner: `SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.10`
 - HTTP `Server`: `nginx/1.18.0 (Ubuntu)` (skin should match a plausible web-admin)
-- MySQL banner: `8.0.36-0ubuntu0.22.04.1`
+- MySQL banner: `5.5.5-10.6.12-MariaDB-0ubuntu0.22.04.1` — we advertise **MariaDB 10.6**
+  (the stock Ubuntu 22.04 package) rather than MySQL 8.x. Two reasons, both real:
+  MariaDB genuinely reports a legacy-prefixed `5.5.5-` version string on the wire, and
+  OpenCanary 0.9.10 **validates** this field against `^[3456]\.[-_~.+\w]+$`
+  (`modules/mysql.py`), so any `8.x` banner is rejected outright.
+  > ⚠️ When that validation fails, the mysql decoy **does not start and nothing obvious
+  > says so** — the traceback is written to the opencanary *log file* (as a `1001`
+  > event), not to stderr or the systemd journal, and ssh/http still come up normally.
+  > A deploy can therefore look healthy while a third of the sensor is missing.
+  > **Always confirm `:3306` is listening after changing this banner.**
 - These are set in `sensor/opencanary/opencanary.conf.template`. **TODO:** re-check the
   exact package versions against the VM you actually deploy, so banner == reality.
 - **TODO:** pick a hostname that fits a naming convention (e.g. `REPLACE_ME_hostname`

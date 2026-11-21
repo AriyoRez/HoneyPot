@@ -27,7 +27,7 @@ Set up the project-local Python environment (`.venv`) and dependencies:
 
 - **macOS:** double-click `bootstrap.command` from Finder (first run may need
   right-click → Open once, due to Gatekeeper), or run `./setup.sh` in a terminal.
-- **Windows:** double-click `bootstrap.bat`, or run `bash setup.sh` in Git Bash.
+- **Windows:** double-click `setup.bat`, or run `bash setup.sh` in Git Bash.
 
 The script creates `.venv`, installs dependencies, pins them to
 `requirements.lock.txt`, and copies `.env.example` to `.env`. It is safe to

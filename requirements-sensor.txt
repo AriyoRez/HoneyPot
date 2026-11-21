@@ -1,0 +1,7 @@
+# Decoy sensor dependency — installed BEST-EFFORT by setup.sh.
+#
+# The isolated Linux VM is the authoritative install target for opencanary; it is
+# installed there by sensor/install.sh into its own venv. On macOS/Windows this
+# package has known install friction, so a failure here is EXPECTED and NOT fatal
+# for local development (you can still run the frontend and the test harness).
+opencanary

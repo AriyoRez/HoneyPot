@@ -1,7 +1,7 @@
 """Custom frontend log-reader package.
 
 Reads the OpenCanary JSON log, normalizes + sanitizes each event per the approved
-event contract (``docs/event-contract.md`` v0.1), and yields events in the schema
+event contract (``docs/event-contract.md`` v0.2), and yields events in the schema
 defined by ``app/reader/schema.json``. Downstream rules and dashboards build on
 this stable shape.
 """

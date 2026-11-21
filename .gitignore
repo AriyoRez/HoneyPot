@@ -27,4 +27,9 @@ evidence/logs/*.raw
 evidence/logs/*.log
 evidence/**/*.raw
 
+# Raw decoy logs pulled from a sensor VM contain PLAINTEXT credentials (SSH and
+# HTTP send passwords in the clear). Never commit one — app/reader sanitizes, and
+# only its hashed output may be tracked.
+*.log
+
 # Note: requirements.lock.txt is intentionally TRACKED (reproducibility).

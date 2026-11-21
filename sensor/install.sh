@@ -41,9 +41,9 @@ sudo tee "$CONF" >/dev/null <<EOF
     "ssh.enabled": $SSH_EN, "ssh.port": 2222,
     "ssh.version": "SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.10",
     "http.enabled": $HTTP_EN, "http.port": 8080,
-    "http.banner": "Server: nginx/1.18.0 (Ubuntu)", "http.skin": "basicLogin",
+    "http.banner": "nginx/1.18.0 (Ubuntu)", "http.skin": "basicLogin",
     "mysql.enabled": $MYSQL_EN, "mysql.port": 3306,
-    "mysql.banner": "8.0.36-0ubuntu0.22.04.1",
+    "mysql.banner": "5.5.5-10.6.12-MariaDB-0ubuntu0.22.04.1",
     "logger": {"class": "PyLogger", "kwargs": {
         "formatters": {"plain": {"format": "%(message)s"}},
         "handlers": {"file": {"class": "logging.FileHandler",

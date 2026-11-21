@@ -39,12 +39,12 @@ write_files:
 
           "http.enabled": ${contains(enabled_decoys, "http")},
           "http.port": 8080,
-          "http.banner": "Server: nginx/1.18.0 (Ubuntu)",
+          "http.banner": "nginx/1.18.0 (Ubuntu)",
           "http.skin": "basicLogin",
 
           "mysql.enabled": ${contains(enabled_decoys, "mysql")},
           "mysql.port": 3306,
-          "mysql.banner": "8.0.36-0ubuntu0.22.04.1",
+          "mysql.banner": "5.5.5-10.6.12-MariaDB-0ubuntu0.22.04.1",
 
           "logger": {
               "class": "PyLogger",

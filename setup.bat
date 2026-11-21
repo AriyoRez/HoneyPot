@@ -1,5 +1,5 @@
 @echo off
-REM bootstrap.bat - double-clickable Windows launcher for setup.sh.
+REM setup.bat - double-clickable Windows launcher for setup.sh.
 REM setup.sh is a bash script, so this runs it via Git Bash.
 setlocal
 cd /d "%~dp0"

@@ -72,13 +72,18 @@ demo time.
 
 - Python **3.10+**, project-local `.venv`.
 - Setup: `./setup.sh` (macOS/Linux/Git Bash), or double-click `bootstrap.command`
-  (macOS) / `bootstrap.bat` (Windows). Safe to re-run. It creates `.venv`, installs
+  (macOS) / `setup.bat` (Windows). Safe to re-run. It creates `.venv`, installs
   deps, runs `pip freeze > requirements.lock.txt`, and copies `.env.example → .env`.
 - Dependencies:
-  - Runtime (`requirements.txt`): `opencanary`, `pyyaml`, `requests`,
-    `python-dotenv`, `jsonschema`.
+  - Runtime (`requirements.txt`): `flask`, `jsonschema`, `pyyaml`, `requests`,
+    `python-dotenv`. These are **mandatory** — `setup.sh` fails if any fail to install.
+  - Sensor (`requirements-sensor.txt`): `opencanary`. Installed **best-effort** and
+    kept out of `requirements.txt` so its known macOS/Windows install friction can
+    never abort the rest of the setup.
   - Dev (`requirements-dev.txt`): `pytest`, `ruff`, `pre-commit`.
   - `requirements.lock.txt` is **tracked** on purpose (reproducibility).
+- `setup.sh` installs from the manifests (never a hardcoded package list) and ends
+  with an import smoke test, so it cannot report success while the app is unrunnable.
 - Tests: `pytest`. Lint/format: `ruff`.
 
 ## Conventions

@@ -43,13 +43,13 @@
     "_comment_http": "HTTP web-admin decoy on the standard port. Server header + skin should tell one consistent story (nginx on Ubuntu). Skin choice is itself fingerprintable.",
     "http.enabled": true,
     "http.port": 80,
-    "http.banner": "Server: nginx/1.18.0 (Ubuntu)",
+    "http.banner": "nginx/1.18.0 (Ubuntu)",
     "http.skin": "basicLogin",
 
-    "_comment_mysql": "MySQL decoy on the standard port. Version banner consistent with the Ubuntu 22.04 persona's packaged MySQL.",
+    "_comment_mysql": "MySQL decoy on the standard port. CONSTRAINT: OpenCanary 0.9.10 validates this banner against ^[3456]\\.[-_~.+\\w]+$ (modules/mysql.py), so the major version MUST be 3-6. A MySQL 8.x banner is REJECTED and the mysql decoy then fails to start SILENTLY -- the error goes to the opencanary log, not stderr, and the other decoys come up fine. We advertise MariaDB 10.6, the stock Ubuntu 22.04 package, whose real wire-protocol version string is legacy-prefixed '5.5.5-' and so passes. Verify :3306 is listening after any banner change.",
     "mysql.enabled": true,
     "mysql.port": 3306,
-    "mysql.banner": "8.0.36-0ubuntu0.22.04.1",
+    "mysql.banner": "5.5.5-10.6.12-MariaDB-0ubuntu0.22.04.1",
 
     "_comment_logger": "Local file logging on the VM. The custom frontend (app/reader) reads these events directly for display.",
     "logger": {
